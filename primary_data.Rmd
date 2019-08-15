@@ -1,0 +1,163 @@
+---
+title: "primary_data"
+author: "Jose Rico"
+date: "8/14/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Importing Data
+
+FiveThirtyEight's Polls Project <https://projects.fivethirtyeight.com/polls/> provides access to the most recent polls at  <https://github.com/fivethirtyeight/data>.  They provide a **url** for direct access the data in **csv** format
+
+```{r data upload}
+primary <- read.csv("https://projects.fivethirtyeight.com/polls-page/president_primary_polls.csv")
+primary_t <- tibble(primary)
+```
+
+## Examine Structure of Data
+
+If you want to quickly see data, just enter the data set's name, `primary` or click on it in the **Environment** tab
+
+```{r}
+
+```
+
+Sometimes the original data frame in too large, you can use the `select()` command from **tidyverse**   
+Note: 'Select' is for the columns of the data frame (aka the variables).
+
+```{r}
+primary_a <- primary %>%
+     select(poll_id, state, pollster, fte_grade, sample_size, population, population_full, methodology, end_date, nationwide_batch, answer, pct) 
+```
+
+Now I only select the top 10 candidate for the next debate, similar code but this is a `filter` command from **tidyverse**
+Note: 'Filter' is for the rows of the data frame (aka the observations).
+
+
+```{r}
+primary_a1 <- primary_a %>%
+  rename(candidate_name=answer)
+
+```
+work on candidate_name data type (maybe that's the problem?)
+```{r}
+
+```
+
+
+Filter out top candidates (using code from R4DS not moderndive)
+```{r}
+primary_a2 <- filter(primary_a1, candidate_name %in% c("Biden", "Gabbard", "Booker", "Castro", "Sanders", "Gillibrand", "Harris", "O'Rourke", "Buttigieg", "Warren", "Kolbuchar", "Yang", "Steyer"))
+```
+
+Filter out based on fte_grade A, A-, B+, B, B- keep
+```{r}
+primary_a3 <- filter(primary_a2, fte_grade %in% c("A", "A-", "B+", "B", "B-"))
+
+```
+
+Filter out just polls conducted either strictly  **live phone** or **online**  
+```{r}
+primary_a4 <- filter(primary_a3, methodology %in% c("Live Phone", "Online"))
+```
+
+Is there a difference for a particular candidate?
+```{r}
+
+```
+
+
+
+
+View the each candidate's percentage data from all polls in a visual summary know boxplot.
+Choose 2 or 3 (2 is all polls, 3 is only A and B fte_rated polls)
+```{r}
+ggplot(data=primary_a4, mapping = aes(x=candidate_name, y=pct, color=candidate_name))+
+     geom_boxplot()
+```
+Try to get the 2 on the same output
+```{r}
+ggplot(data=primary_a2, mapping = aes(x=candidate_name, y=pct, color=fte_grade))+
+     geom_boxplot()
+```
+or view each grade on separate plot
+```{r}
+ggplot(data=primary_a5, mapping = aes(x=candidate_name, y=pct, color=candidate_name))+
+    geom_boxplot()+
+    coord_flip()+
+    facet_wrap(~ methodology, nrow=2 )
+```
+
+
+View timeline of just a couple candidate polling at a time.
+
+```{r}
+primary_a5 <-filter(primary_a4, candidate_name %in% c("Sanders", "Biden" , "Harris", "Warren", "O'Rourke", "Buttigieg"))
+
+```
+timeline 
+```{r}
+ggplot(data=primary_a5, mapping = aes(x=poll_id, y=pct, color=candidate_name))+
+    geom_bar()+
+    facet_wrap(~ methodology, nrow=2 )
+```
+
+Trendlines data from before first debate to know
+
+```{r}
+ggplot(data=primary_a6, mapping = aes(x=poll_id, y=pct, color=candidate_name ))+
+    geom_point()+
+    geom_smooth(method="lm", se = FALSE)
+```
+Prefer to use dates on x axis need to convert dates to days to election
+first convert data format to `date`
+```{r}
+primary_a7 <- primary_a6 %>% 
+  mutate(en_date1 = as.Date.factor(end_date, format = "%m/%d/%Y"))
+
+```
+next create new variable days_to_NH
+need **lubridate** package
+```{r}
+NH_primary <- "2/11/19"
+NH_primary <- as.Date.factor(NH_primary, format = "%m/%d/%Y")
+primary_a8 <- primary_a7 %>% 
+  mutate(days_to_NH = ddays(NH_primary -en_date1 ))
+```
+
+
+
+Summary Data on Each Candidate
+
+```{r}
+
+```
+
+
+
+
+Histograms of each candidate poll numbers
+```{r}
+ggplot(data=primary_a5, mapping = aes(pct, color=candidate_name, size = sample_size ))+
+    geom_histogram() +
+    facet_wrap(~ candidate_name)
+```
+
+
+
+Select polls ending after June 18
+```{r}
+primary_a6 <-filter(primary_a5, poll_id > 58488)
+
+
+```
+
+
+
+
+
