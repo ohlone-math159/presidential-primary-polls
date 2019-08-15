@@ -66,51 +66,44 @@ Filter out just polls conducted either strictly  **live phone** or **online**
 primary_a4 <- filter(primary_a3, methodology %in% c("Live Phone", "Online"))
 ```
 
-Is there a difference for a particular candidate?
-```{r}
-
-```
-
-
-
-
-View the each candidate's percentage data from all polls in a visual summary know boxplot.
-Choose 2 or 3 (2 is all polls, 3 is only A and B fte_rated polls)
-```{r}
-ggplot(data=primary_a4, mapping = aes(x=candidate_name, y=pct, color=candidate_name))+
-     geom_boxplot()
-```
-Try to get the 2 on the same output
-```{r}
-ggplot(data=primary_a2, mapping = aes(x=candidate_name, y=pct, color=fte_grade))+
-     geom_boxplot()
-```
-or view each grade on separate plot
-```{r}
-ggplot(data=primary_a5, mapping = aes(x=candidate_name, y=pct, color=candidate_name))+
-    geom_boxplot()+
-    coord_flip()+
-    facet_wrap(~ methodology, nrow=2 )
-```
-
-
 View timeline of just a couple candidate polling at a time.
 
 ```{r}
 primary_a5 <-filter(primary_a4, candidate_name %in% c("Sanders", "Biden" , "Harris", "Warren", "O'Rourke", "Buttigieg"))
 
 ```
-timeline 
+
+Filter since just before the first debate
 ```{r}
-ggplot(data=primary_a5, mapping = aes(x=poll_id, y=pct, color=candidate_name))+
-    geom_bar()+
+primary_a6 <-filter(primary_a5, poll_id > 58488)
+```
+
+
+View the each candidate's percentage data from all polls in a visual summary know boxplot.
+Choose 2 or 3 (2 is all polls, 3 is only A and B fte_rated polls)
+```{r}
+ggplot(data=primary_a6, mapping = aes(x=candidate_name, y=pct, color=candidate_name))+
+     geom_boxplot()
+```
+Try to get the 2 on the same output
+```{r}
+ggplot(data=primary_a7, mapping = aes(x=candidate_name, y=pct, color=fte_grade))+
+     geom_boxplot()
+```
+or view each grade on separate plot
+```{r}
+ggplot(data=primary_a7, mapping = aes(x=candidate_name, y=pct, color=candidate_name))+
+    geom_boxplot()+
+    coord_flip()+
     facet_wrap(~ methodology, nrow=2 )
 ```
+
+
 
 Trendlines data from before first debate to know
 
 ```{r}
-ggplot(data=primary_a6, mapping = aes(x=poll_id, y=pct, color=candidate_name ))+
+ggplot(data=primary_a7, mapping = aes(x=en_date1, y=pct, color=candidate_name ))+
     geom_point()+
     geom_smooth(method="lm", se = FALSE)
 ```
@@ -118,17 +111,30 @@ Prefer to use dates on x axis need to convert dates to days to election
 first convert data format to `date`
 ```{r}
 primary_a7 <- primary_a6 %>% 
-  mutate(en_date1 = as.Date.factor(end_date, format = "%m/%d/%Y"))
+  mutate(en_date1 = as.Date(end_date, format = "%m/%d/%Y"))
 
 ```
 next create new variable days_to_NH
-need **lubridate** package
+need **lubridate** package  (still working on this)
 ```{r}
 NH_primary <- "2/11/19"
-NH_primary <- as.Date.factor(NH_primary, format = "%m/%d/%Y")
-primary_a8 <- primary_a7 %>% 
-  mutate(days_to_NH = ddays(NH_primary -en_date1 ))
+NH_primary <- as.Date(NH_primary, format = "%m/%d/%Y")
+#primary_a8 <- primary_a7 %>% 
+#  mutate(days_to_NH = ddays(NH_primary -en_date1 ))
 ```
+Now, how do we subtract dates to creat the new column (easy once variable is in date format)
+```{r}
+primary_a8 <- primary_a7 %>% 
+   mutate(days_to_NH = NH_primary -en_date1 )
+```
+Plot pct vs days_to_NH
+
+```{r}
+ggplot(data=primary_a8, mapping = aes(x=days_to_NH, y=pct, color=candidate_name ))+
+    geom_point()+
+    geom_smooth(method="lm", se = FALSE)
+```
+
 
 
 
