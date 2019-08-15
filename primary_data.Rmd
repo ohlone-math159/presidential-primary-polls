@@ -132,7 +132,8 @@ Plot pct vs days_to_NH
 ```{r}
 ggplot(data=primary_a8, mapping = aes(x=days_to_NH, y=pct, color=candidate_name ))+
     geom_point()+
-    geom_smooth(method="lm", se = FALSE)
+    geom_smooth()
+
 ```
 
 
@@ -141,7 +142,9 @@ ggplot(data=primary_a8, mapping = aes(x=days_to_NH, y=pct, color=candidate_name 
 Summary Data on Each Candidate
 
 ```{r}
-
+ggplot(data=filter(primary_a8, candidate_name %in% c("Sanders","Harris") & population == "lv" ), mapping = aes(x=days_to_NH, y=pct, color = candidate_name, size=sample_size ))+
+    geom_point()+
+    geom_smooth(method ="lm")
 ```
 
 
